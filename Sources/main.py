@@ -7,6 +7,7 @@ import pygame
 from pygame.constants import KEYDOWN
 import bfs
 import astar
+import astar1
 
 ''' Timeout của mỗi map là 30 phút  '''
 TIME_OUT = 1800
@@ -20,7 +21,7 @@ def get_boards():
     list_boards = []
     for file in os.listdir():
         if file.endswith(".txt"):
-            file_path = f"{path_board}\{file}"
+            file_path = f"{path_board}/{file}"
             board = get_board(file_path)
             # print(file)
             list_boards.append(board)
@@ -32,7 +33,7 @@ def get_check_points():
     list_check_point = []
     for file in os.listdir():
         if file.endswith(".txt"):
-            file_path = f"{path_checkpoint}\{file}"
+            file_path = f"{path_checkpoint}/{file}"
             check_point = get_pair(file_path)
             list_check_point.append(check_point)
     return list_check_point
@@ -135,7 +136,7 @@ VARIABLES INITIALIZATIONS
 #Map level
 mapNumber = 0
 #Algorithm to solve the game
-algorithm = "Breadth First Search"
+algorithm = "Euclidean Distance Heuristic"
 #Your scene states, including: 
 #init for choosing your map and algorithm
 #loading for displaying "loading scene"
@@ -169,12 +170,16 @@ def sokoban():
 			list_check_point = check_points[mapNumber]
 
 			#Choose between BFS or Hill Climbing
-			if algorithm == "Breadth First Search":
+			if algorithm == "Euclidean Distance Heuristic":
+				print("EDH")
+				list_board = astar1.AStar_Search1(maps[mapNumber], list_check_point)
+			elif algorithm == "Manhattan Distance Heuristic":
+				print("MDH")
+				list_board = astar.AStar_Search(maps[mapNumber], list_check_point)
+			else:
 				print("BFS")
 				list_board = bfs.BFS_search(maps[mapNumber], list_check_point)
-			else:
-				print("AStar")
-				list_board = astar.AStart_Search(maps[mapNumber], list_check_point)
+
 			if len(list_board) > 0:
 				sceneState = "playing"
 				stateLenght = len(list_board[0])
@@ -218,10 +223,12 @@ def sokoban():
 						sceneState = "init"
 				#Press SPACE key board to switch algorithm
 				if event.key == pygame.K_SPACE and sceneState == "init":
-					if algorithm == "Breadth First Search":
-						algorithm = "A Star Search"
+					if algorithm == "Euclidean Distance Heuristic":
+						algorithm = "Manhattan Distance Heuristic"
+					elif algorithm == "Manhattan Distance Heuristic":
+						algorithm = "BFS" 
 					else:
-						algorithm = "Breadth First Search"
+						algorithm = "Euclidean Distance Heuristic"
 		pygame.display.flip()
 	pygame.quit()
 
@@ -234,7 +241,7 @@ def initGame(map):
 	screen.blit(titleText, titleRect)
 
 	desSize = pygame.font.Font('gameFont.ttf', 20)
-	desText = desSize.render('Chỉnh n với n là kích thước n x n của map', True, WHITE)
+	desText = desSize.render('Chọn map:', True, WHITE)
 	desRect = desText.get_rect(center=(320, 140))
 	screen.blit(desText, desRect)
 	
@@ -244,12 +251,12 @@ def initGame(map):
 	screen.blit(desText, desRect)
 
 	mapSize = pygame.font.Font('gameFont.ttf', 30)
-	mapText = mapSize.render("n = " + str(mapNumber + 6), True, WHITE)
+	mapText = mapSize.render(" Map: " + str(mapNumber + 1) + " ", True, WHITE)
 	mapRect = mapText.get_rect(center=(320, 200))
 	screen.blit(mapText, mapRect)
 
-	screen.blit(arrow_left, (246, 188))
-	screen.blit(arrow_right, (370, 188))
+	screen.blit(arrow_left, (240, 188))
+	screen.blit(arrow_right, (376, 188))
 
 	algorithmSize = pygame.font.Font('gameFont.ttf', 30)
 	algorithmText = algorithmSize.render(str(algorithm), True, WHITE)
